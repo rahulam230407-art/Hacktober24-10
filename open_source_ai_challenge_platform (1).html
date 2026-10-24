@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open-Source AI Project Challenge 2026</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#0D1117',
+              card: '#161B22',
+              border: '#30363D',
+              emerald: '#10B981',
+              cyan: '#06B6D4',
+              accent: '#3B82F6',
+              purple: '#8B5CF6'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS Client v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* Custom Scrollbar & Aesthetics */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0D1117;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #30363D;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #10B981;
+    }
+
+    /* Glassmorphism Effects */
+    .glass-card {
+      background: rgba(22, 27, 34, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-nav {
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Gradient Animations & Glow */
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.4; filter: blur(20px); }
+      50% { opacity: 0.8; filter: blur(30px); }
+    }
+    .glow-bg {
+      animation: pulseGlow 6s infinite ease-in-out;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #10B981 0%, #06B6D4 50%, #8B5CF6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Custom Toast Animations */
+    @keyframes slideIn {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-slide-in {
+      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="bg-[#0D1117] text-gray-100 font-sans antialiased min-h-screen flex flex-col selection:bg-emerald-500/30 selection:text-emerald-300">
+
+  <!-- Ambient Glow Background Effects -->
+  <div class="fixed top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none glow-bg"></div>
+  <div class="fixed bottom-1/3 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none glow-bg" style="animation-delay: 3s;"></div>
+  <div class="fixed top-2/3 left-1/3 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none glow-bg" style="animation-delay: 1.5s;"></div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 max-w-md pointer-events-none"></div>
+
+  <!-- HEADER / NAVBAR -->
+  <header class="sticky top-0 z-40 glass-nav transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Brand Logo -->
+        <a href="#" class="flex items-center gap-3 group">
+          <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 group-hover:border-emerald-400 transition-all duration-300">
+            <i data-lucide="cpu" class="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform duration-300"></i>
+            <span class="absolute -top-1 -right-1 flex h-3 w-3">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span>
+          </div>
+          <div>
+            <span class="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
+              OpenAI<span class="gradient-text font-extrabold">Forge</span>
+            </span>
+            <span class="block text-[10px] text-gray-400 font-mono tracking-wider uppercase -mt-1">Global AI Challenge '26</span>
+          </div>
+        </a>
+
+        <!-- Navigation Links -->
+        <nav class="hidden md:flex items-center space-x-1">
+          <a href="#tracks" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors">Tracks</a>
+          <a href="#leaderboard" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors">Leaderboard</a>
+          <a href="#starter-kits" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors">Starter Kits</a>
+          <a href="#guidelines" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors">Guidelines</a>
+          <a href="#faq" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors">FAQ</a>
+        </nav>
+
+        <!-- Right CTAs -->
+        <div class="flex items-center gap-3">
+          <!-- Submission Counter Badge -->
+          <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/40 border border-emerald-500/20 text-xs font-mono text-emerald-400">
+            <i data-lucide="database" class="w-3.5 h-3.5 animate-pulse"></i>
+            <span id="nav-submission-count">0</span> Submissions
+          </div>
+
+          <!-- Submit CTA Button -->
+          <button onclick="openModal()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-gray-950 font-semibold text-sm shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all duration-300 hover:-translate-y-0.5">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span>Submit Project</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow">
+    <!-- HERO SECTION -->
+    <section class="relative pt-12 pb-20 overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          <!-- Hero Text Content -->
+          <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-emerald-400 backdrop-blur-md">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Open-Source AI Innovation Sprint • $50,000 Prize Pool
+            </div>
+
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+              Architect the Future of <br class="hidden sm:inline"/>
+              <span class="gradient-text">Open-Source AI</span>
+            </h1>
+
+            <p class="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
+              Build breakthrough applications using open-weight LLMs, autonomous agent harnesses, and high-performance local inference runtimes. Accelerate private, transparent, and accessible AI.
+            </p>
+
+            <!-- Track Badges -->
+            <div class="flex flex-wrap justify-center lg:justify-start gap-2 pt-2">
+              <span class="px-3 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 font-mono flex items-center gap-1.5">
+                <i data-lucide="box" class="w-3.5 h-3.5"></i> Open Weights
+              </span>
+              <span class="px-3 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-300 font-mono flex items-center gap-1.5">
+                <i data-lucide="bot" class="w-3.5 h-3.5"></i> Agent Frameworks
+              </span>
+              <span class="px-3 py-1 rounded-md bg-purple-500/10 border border-purple-500/20 text-xs text-purple-300 font-mono flex items-center gap-1.5">
+                <i data-lucide="terminal" class="w-3.5 h-3.5"></i> Local Inference
+              </span>
+            </div>
+
+            <!-- CTAs -->
+            <div class="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+              <button onclick="openModal()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-gray-950 font-bold text-base shadow-xl shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                <i data-lucide="rocket" class="w-5 h-5"></i>
+                <span>Submit Your Entry</span>
+              </button>
+
+              <button onclick="openChatbot()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-semibold text-base backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2">
+                <i data-lucide="sparkles" class="w-5 h-5 text-cyan-400"></i>
+                <span>Ask AI Assistant</span>
+              </button>
+            </div>
+
+            <!-- Deadline Countdown Banner -->
+            <div class="pt-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+              <span class="text-xs text-gray-400 font-mono uppercase tracking-wider">Submission Closes In:</span>
+              <div class="flex items-center gap-3 font-mono text-sm font-semibold">
+                <div class="bg-card border border-brand-border px-2.5 py-1 rounded-md text-emerald-400" id="timer-days">00d</div>
+                <span class="text-gray-600">:</span>
+                <div class="bg-card border border-brand-border px-2.5 py-1 rounded-md text-emerald-400" id="timer-hours">00h</div>
+                <span class="text-gray-600">:</span>
+                <div class="bg-card border border-brand-border px-2.5 py-1 rounded-md text-emerald-400" id="timer-mins">00m</div>
+                <span class="text-gray-600">:</span>
+                <div class="bg-card border border-brand-border px-2.5 py-1 rounded-md text-emerald-400" id="timer-secs">00s</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Hero Graphic Code Preview Card -->
+          <div class="lg:col-span-5">
+            <div class="glass-card rounded-2xl p-5 shadow-2xl relative border border-white/10 group hover:border-emerald-500/30 transition-all duration-500">
+              <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+                <div class="flex items-center space-x-2">
+                  <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+                  <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+                  <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+                  <span class="ml-2 text-xs font-mono text-gray-400">agent_orchestrator.py</span>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Ollama + vLLM</span>
+              </div>
+
+              <pre class="font-mono text-xs text-gray-300 space-y-1 overflow-x-auto p-2 leading-relaxed">
+<span class="text-purple-400">from</span> langchain_community.llms <span class="text-purple-400">import</span> Ollama
+<span class="text-purple-400">from</span> crewai <span class="text-purple-400">import</span> Agent, Task, Crew
+
+<span class="text-gray-500"># 1. Initialize Open-Weight Local LLM</span>
+local_llm = Ollama(model=<span class="text-emerald-300">"gemma2:9b-instruct"</span>)
+
+<span class="text-gray-500"># 2. Define Autonomous AI Agent</span>
+researcher = Agent(
+    role=<span class="text-emerald-300">'AI Systems Researcher'</span>,
+    goal=<span class="text-emerald-300">'Discover optimal local quantized models'</span>,
+    backstory=<span class="text-emerald-300">'Expert in vLLM & GGUF benchmarks'</span>,
+    llm=local_llm,
+    verbose=<span class="text-cyan-400">True</span>
+)
+
+<span class="text-gray-500"># 3. Execute Challenge Task</span>
+crew = Crew(agents=[researcher], tasks=[...])
+result = crew.kickoff()
+<span class="text-yellow-400">print</span>(<span class="text-emerald-300">"Challenge Submission Ready!"</span>)
+</pre>
+
+              <div class="mt-4 pt-3 border-t border-white/5 grid grid-cols-3 gap-2 text-center">
+                <div class="p-2 rounded-lg bg-white/5">
+                  <div class="text-[10px] text-gray-400 uppercase font-mono">Top Models</div>
+                  <div class="text-xs font-bold text-emerald-400">Llama 3 & Gemma</div>
+                </div>
+                <div class="p-2 rounded-lg bg-white/5">
+                  <div class="text-[10px] text-gray-400 uppercase font-mono">Max Latency</div>
+                  <div class="text-xs font-bold text-cyan-400">&lt; 15ms / token</div>
+                </div>
+                <div class="p-2 rounded-lg bg-white/5">
+                  <div class="text-[10px] text-gray-400 uppercase font-mono">License</div>
+                  <div class="text-xs font-bold text-purple-400">100% Permissive</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- CORE TRACKS SECTION -->
+    <section id="tracks" class="py-16 bg-black/20 border-y border-white/5">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+          <h2 class="text-xs font-mono text-emerald-400 uppercase tracking-widest mb-2">Challenge Focus Areas</h2>
+          <h3 class="text-3xl font-extrabold text-white sm:text-4xl">Choose Your AI Innovation Track</h3>
+          <p class="mt-3 text-gray-400 text-sm sm:text-base">Submit single track projects or combine multiple tracks to score bonus points in hybrid evaluation.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Track 1 Card -->
+          <div class="glass-card rounded-2xl p-6 relative flex flex-col justify-between group hover:border-emerald-500/40 transition-all duration-300 hover:-translate-y-1">
+            <div>
+              <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-5 group-hover:scale-110 transition-transform">
+                <i data-lucide="cpu" class="w-6 h-6"></i>
+              </div>
+              <span class="text-xs font-mono text-emerald-400 uppercase tracking-wider">Track 01</span>
+              <h4 class="text-xl font-bold text-white mt-1 mb-3">Open-Weight Models 💡</h4>
+              <p class="text-gray-400 text-sm leading-relaxed mb-6">
+                Build applications fine-tuned on open foundation models. Enhance reasoning, multi-modality, or domain-specific accuracy.
+              </p>
+              <div class="space-y-2 mb-6">
+                <div class="text-xs font-mono text-gray-400">Supported Foundations:</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">Gemma 2</span>
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">Llama 3.3</span>
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">Mistral NeMo</span>
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">Qwen 2.5</span>
+                </div>
+              </div>
+            </div>
+            <button onclick="filterTrackAndScroll('Open-Weight Models')" class="w-full py-2.5 px-4 rounded-lg bg-white/5 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/20 text-xs font-semibold font-mono transition-colors flex items-center justify-center gap-2">
+              <span>View Track Entries</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Track 2 Card -->
+          <div class="glass-card rounded-2xl p-6 relative flex flex-col justify-between group hover:border-cyan-500/40 transition-all duration-300 hover:-translate-y-1">
+            <div>
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-5 group-hover:scale-110 transition-transform">
+                <i data-lucide="bot" class="w-6 h-6"></i>
+              </div>
+              <span class="text-xs font-mono text-cyan-400 uppercase tracking-wider">Track 02</span>
+              <h4 class="text-xl font-bold text-white mt-1 mb-3">Agent Harnesses 🛠️</h4>
+              <p class="text-gray-400 text-sm leading-relaxed mb-6">
+                Design autonomous agent workflows, tool-use systems, multi-agent collaborations, or memory-augmented harnesses.
+              </p>
+              <div class="space-y-2 mb-6">
+                <div class="text-xs font-mono text-gray-400">Supported Frameworks:</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">LangChain</span>
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">AutoGen</span>
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">CrewAI</span>
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">LlamaIndex</span>
+                </div>
+              </div>
+            </div>
+            <button onclick="filterTrackAndScroll('Agent Frameworks')" class="w-full py-2.5 px-4 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-cyan-400 hover:text-cyan-300 border border-cyan-500/20 text-xs font-semibold font-mono transition-colors flex items-center justify-center gap-2">
+              <span>View Track Entries</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Track 3 Card -->
+          <div class="glass-card rounded-2xl p-6 relative flex flex-col justify-between group hover:border-purple-500/40 transition-all duration-300 hover:-translate-y-1">
+            <div>
+              <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-5 group-hover:scale-110 transition-transform">
+                <i data-lucide="terminal" class="w-6 h-6"></i>
+              </div>
+              <span class="text-xs font-mono text-purple-400 uppercase tracking-wider">Track 03</span>
+              <h4 class="text-xl font-bold text-white mt-1 mb-3">Local Inference & Runtime &lt;/&gt;</h4>
+              <p class="text-gray-400 text-sm leading-relaxed mb-6">
+                Push edge computing, high-throughput batching, quantization, and privacy-first local LLM execution.
+              </p>
+              <div class="space-y-2 mb-6">
+                <div class="text-xs font-mono text-gray-400">Supported Runtimes:</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">Ollama</span>
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">vLLM</span>
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">llama.cpp</span>
+                  <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 font-mono">LocalAI</span>
+                </div>
+              </div>
+            </div>
+            <button onclick="filterTrackAndScroll('Local Inference')" class="w-full py-2.5 px-4 rounded-lg bg-white/5 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 border border-purple-500/20 text-xs font-semibold font-mono transition-colors flex items-center justify-center gap-2">
+              <span>View Track Entries</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Multi-Track Special Prize Banner -->
+        <div class="mt-8 p-4 rounded-xl bg-gradient-to-r from-emerald-950/30 via-cyan-950/30 to-purple-950/30 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-yellow-400 shrink-0">
+              <i data-lucide="award" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <span class="text-sm font-bold text-white">Multi-Track Hybrid Special Prize</span>
+              <p class="text-xs text-gray-400">Combine an open-weight model with a local runtime AND agent harness for bonus evaluation points!</p>
+            </div>
+          </div>
+          <button onclick="openModal()" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-colors shrink-0">
+            Submit Hybrid Project
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE SUBMISSIONS & LEADERBOARD SECTION -->
+    <section id="leaderboard" class="py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div>
+            <h2 class="text-xs font-mono text-cyan-400 uppercase tracking-widest mb-1">Live Database Feed</h2>
+            <h3 class="text-3xl font-bold text-white">Project Submissions Showcase</h3>
+          </div>
+          
+          <!-- Search Input -->
+          <div class="relative w-full md:w-80">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="text" id="search-input" oninput="handleSearch()" placeholder="Search project, team, tech..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-card border border-brand-border text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 transition-colors">
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex flex-wrap items-center gap-2 mb-8 border-b border-white/10 pb-4">
+          <button onclick="setFilterTab('All')" id="tab-All" class="px-4 py-2 rounded-lg text-xs font-mono font-medium transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+            All Tracks (<span id="count-All">0</span>)
+          </button>
+          <button onclick="setFilterTab('Open-Weight Models')" id="tab-Open-Weight Models" class="px-4 py-2 rounded-lg text-xs font-mono font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+            Open-Weight Models
+          </button>
+          <button onclick="setFilterTab('Agent Frameworks')" id="tab-Agent Frameworks" class="px-4 py-2 rounded-lg text-xs font-mono font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+            Agent Frameworks
+          </button>
+          <button onclick="setFilterTab('Local Inference')" id="tab-Local Inference" class="px-4 py-2 rounded-lg text-xs font-mono font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+            Local Inference
+          </button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="submissions-loading" class="py-16 text-center">
+          <div class="inline-block w-8 h-8 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mb-3"></div>
+          <p class="text-xs font-mono text-gray-400">Fetching live entries from Supabase DB...</p>
+        </div>
+
+        <!-- Submissions Grid -->
+        <div id="submissions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden"></div>
+
+        <!-- Empty State Fallback -->
+        <div id="submissions-empty" class="py-12 text-center glass-card rounded-2xl hidden">
+          <i data-lucide="folder-search" class="w-10 h-10 mx-auto text-gray-500 mb-3"></i>
+          <h4 class="text-sm font-semibold text-gray-300">No projects found matching criteria</h4>
+          <p class="text-xs text-gray-500 mt-1">Try adjusting your search query or track filter tab.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STARTER KITS SECTION -->
+    <section id="starter-kits" class="py-16 bg-black/20 border-t border-white/5">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+          <h2 class="text-xs font-mono text-purple-400 uppercase tracking-widest mb-2">Kickstart Your Hack</h2>
+          <h3 class="text-3xl font-extrabold text-white">Starter Kits & Developer Resources</h3>
+          <p class="mt-2 text-gray-400 text-sm">Copy one-line installation commands or access official repositories to build quickly.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="glass-card rounded-xl p-5 border border-white/10 hover:border-emerald-500/30 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-white flex items-center gap-2">
+                <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i> Ollama Local LLM Runner
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-gray-400">v0.5.1</span>
+            </div>
+            <p class="text-xs text-gray-400 mb-4">Run Gemma 2, Llama 3.3, and Mistral locally in seconds with full OpenAI API compatibility.</p>
+            <div class="bg-black/60 rounded-lg p-2.5 border border-brand-border flex items-center justify-between font-mono text-xs text-emerald-300">
+              <code class="truncate">ollama run gemma2:9b</code>
+              <button onclick="copyToClipboard('ollama run gemma2:9b', this)" class="text-gray-400 hover:text-white ml-2 p-1">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-xl p-5 border border-white/10 hover:border-cyan-500/30 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-white flex items-center gap-2">
+                <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i> vLLM High Throughput Engine
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-gray-400">v0.6.0</span>
+            </div>
+            <p class="text-xs text-gray-400 mb-4">Ultra-fast serving with PagedAttention algorithm for high-concurrency production setups.</p>
+            <div class="bg-black/60 rounded-lg p-2.5 border border-brand-border flex items-center justify-between font-mono text-xs text-cyan-300">
+              <code class="truncate">pip install vllm</code>
+              <button onclick="copyToClipboard('pip install vllm', this)" class="text-gray-400 hover:text-white ml-2 p-1">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-xl p-5 border border-white/10 hover:border-purple-500/30 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-white flex items-center gap-2">
+                <i data-lucide="bot" class="w-4 h-4 text-purple-400"></i> LangChain Agent Starter
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-gray-400">Python/TS</span>
+            </div>
+            <p class="text-xs text-gray-400 mb-4">Complete template with vector store indexing, tool calling, and local fallback capabilities.</p>
+            <div class="bg-black/60 rounded-lg p-2.5 border border-brand-border flex items-center justify-between font-mono text-xs text-purple-300">
+              <code class="truncate">pip install langchain-community</code>
+              <button onclick="copyToClipboard('pip install langchain-community', this)" class="text-gray-400 hover:text-white ml-2 p-1">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GUIDELINES SECTION -->
+    <section id="guidelines" class="py-16">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-10">
+          <h2 class="text-xs font-mono text-emerald-400 uppercase tracking-widest mb-2">Handbook & Rules</h2>
+          <h3 class="text-3xl font-bold text-white">Guidelines & Submission Requirements</h3>
+        </div>
+
+        <div id="rules" class="space-y-4">
+          <div class="glass-card rounded-xl border border-white/10 overflow-hidden">
+            <button onclick="toggleAccordion('acc-1')" class="w-full px-6 py-4 text-left flex items-center justify-between font-semibold text-white hover:bg-white/5 transition-colors">
+              <span class="flex items-center gap-2 text-sm">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i> Eligibility & Team Size
+              </span>
+              <i data-lucide="chevron-down" id="icon-acc-1" class="w-4 h-4 text-gray-400 transition-transform"></i>
+            </button>
+            <div id="acc-1" class="px-6 py-4 text-xs text-gray-400 border-t border-white/5 space-y-2 hidden">
+              <p>• Open globally to individuals and teams of up to 4 members.</p>
+              <p>• Code submitted must be newly authored or represent significant additions to existing open-source frameworks.</p>
+              <p>• Work must adhere to open licenses (MIT, Apache 2.0, or permissive community licenses).</p>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-xl border border-white/10 overflow-hidden">
+            <button onclick="toggleAccordion('acc-2')" class="w-full px-6 py-4 text-left flex items-center justify-between font-semibold text-white hover:bg-white/5 transition-colors">
+              <span class="flex items-center gap-2 text-sm">
+                <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i> Judging Criteria & Weightings
+              </span>
+              <i data-lucide="chevron-down" id="icon-acc-2" class="w-4 h-4 text-gray-400 transition-transform"></i>
+            </button>
+            <div id="acc-2" class="px-6 py-4 text-xs text-gray-400 border-t border-white/5 space-y-3 hidden">
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div class="p-2 rounded bg-white/5">
+                  <div class="text-base font-bold text-emerald-400">30%</div>
+                  <div class="text-[10px] text-gray-300">Technical Execution</div>
+                </div>
+                <div class="p-2 rounded bg-white/5">
+                  <div class="text-base font-bold text-cyan-400">30%</div>
+                  <div class="text-[10px] text-gray-300">Innovation & Originality</div>
+                </div>
+                <div class="p-2 rounded bg-white/5">
+                  <div class="text-base font-bold text-purple-400">30%</div>
+                  <div class="text-[10px] text-gray-300">Open Source Impact</div>
+                </div>
+                <div class="p-2 rounded bg-white/5">
+                  <div class="text-base font-bold text-yellow-400">10%</div>
+                  <div class="text-[10px] text-gray-300">UX & Documentation</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-xl border border-white/10 overflow-hidden">
+            <button onclick="toggleAccordion('acc-3')" class="w-full px-6 py-4 text-left flex items-center justify-between font-semibold text-white hover:bg-white/5 transition-colors">
+              <span class="flex items-center gap-2 text-sm">
+                <i data-lucide="file-text" class="w-4 h-4 text-purple-400"></i> Required Deliverables
+              </span>
+              <i data-lucide="chevron-down" id="icon-acc-3" class="w-4 h-4 text-gray-400 transition-transform"></i>
+            </button>
+            <div id="acc-3" class="px-6 py-4 text-xs text-gray-400 border-t border-white/5 space-y-2 hidden">
+              <p><strong>1. Public GitHub Repository:</strong> Must contain a clear README.md with setup instructions and model references.</p>
+              <p><strong>2. Working Demo Link / Video:</strong> A live web app URL, Hugging Face Space, or video demonstration (&lt; 3 mins).</p>
+              <p><strong>3. Architecture Note:</strong> Brief summary of models, local runtimes, or agent harnesses used.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ SECTION -->
+    <section id="faq" class="py-16 bg-black/20 border-t border-white/5">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-10">
+          <h2 class="text-xs font-mono text-cyan-400 uppercase tracking-widest mb-2">Common Questions</h2>
+          <h3 class="text-3xl font-bold text-white">Frequently Asked Questions</h3>
+        </div>
+
+        <div class="space-y-4">
+          <div class="glass-card rounded-xl border border-white/10 overflow-hidden">
+            <button onclick="toggleAccordion('faq-1')" class="w-full px-6 py-4 text-left flex items-center justify-between font-semibold text-white hover:bg-white/5 transition-colors text-sm">
+              <span>Can I participate as a solo developer?</span>
+              <i data-lucide="chevron-down" id="icon-faq-1" class="w-4 h-4 text-gray-400 transition-transform"></i>
+            </button>
+            <div id="faq-1" class="px-6 py-4 text-xs text-gray-400 border-t border-white/5 hidden">
+              Yes, solo developers are fully eligible and welcomed to participate alongside team submissions.
+            </div>
+          </div>
+
+          <div class="glass-card rounded-xl border border-white/10 overflow-hidden">
+            <button onclick="toggleAccordion('faq-2')" class="w-full px-6 py-4 text-left flex items-center justify-between font-semibold text-white hover:bg-white/5 transition-colors text-sm">
+              <span>Are proprietary models like OpenAI GPT-4 allowed?</span>
+              <i data-lucide="chevron-down" id="icon-faq-2" class="w-4 h-4 text-gray-400 transition-transform"></i>
+            </button>
+            <div id="faq-2" class="px-6 py-4 text-xs text-gray-400 border-t border-white/5 hidden">
+              This hackathon strictly focuses on open-weight and open-source models (Gemma, Llama 3, Mistral, Qwen, etc.). Proprietary API-only models cannot be used as the primary core LLM.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-black/60 border-t border-white/10 py-12 text-gray-400 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div class="space-y-3">
+          <div class="flex items-center gap-2 text-white font-bold">
+            <i data-lucide="cpu" class="w-4 h-4 text-emerald-400"></i> OpenAI Forge
+          </div>
+          <p class="text-gray-500 leading-relaxed">Empowering global developers to build decentralized, private, and open-source artificial intelligence systems.</p>
+        </div>
+
+        <div>
+          <h5 class="text-white font-mono font-semibold mb-3">Quick Navigation</h5>
+          <ul class="space-y-2">
+            <li><a href="#tracks" class="hover:text-emerald-400 transition-colors">Challenge Tracks</a></li>
+            <li><a href="#leaderboard" class="hover:text-emerald-400 transition-colors">Leaderboard</a></li>
+            <li><a href="#starter-kits" class="hover:text-emerald-400 transition-colors">Starter Kits</a></li>
+            <li><a href="#guidelines" class="hover:text-emerald-400 transition-colors">Guidelines</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h5 class="text-white font-mono font-semibold mb-3">Community & Support</h5>
+          <div class="flex flex-col space-y-2">
+            <a href="https://github.com" target="_blank" class="flex items-center gap-2 hover:text-white transition-colors">
+              <i data-lucide="github" class="w-4 h-4"></i> GitHub Community
+            </a>
+            <a href="#" onclick="openChatbot(); return false;" class="flex items-center gap-2 hover:text-emerald-400 transition-colors">
+              <i data-lucide="bot" class="w-4 h-4 text-cyan-400"></i> AI Assistant Support
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <h5 class="text-white font-mono font-semibold mb-3">Database Persistence</h5>
+          <div class="p-3 rounded-lg bg-card border border-brand-border space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400">Backend:</span>
+              <span class="text-emerald-400 font-mono font-medium">Supabase DB</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400">Table:</span>
+              <span class="text-gray-300 font-mono">`submissions`</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400">Sync Status:</span>
+              <span class="flex items-center gap-1 text-emerald-400 text-[10px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Connected
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-gray-500">
+        <p>© 2026 Open-Source AI Challenge Platform. All rights reserved.</p>
+        <div class="flex gap-4">
+          <a href="#" class="hover:underline">Privacy Policy</a>
+          <a href="#" class="hover:underline">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SUBMISSION MODAL FORM -->
+  <div id="submit-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-card w-full max-w-2xl rounded-2xl p-6 sm:p-8 border border-white/10 relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeModal()" class="absolute top-5 right-5 p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="mb-6">
+        <span class="text-xs font-mono text-emerald-400 uppercase tracking-widest">Entry Submission</span>
+        <h3 class="text-2xl font-bold text-white mt-1">Submit Your AI Project</h3>
+        <p class="text-xs text-gray-400 mt-1">All entries are stored directly in Supabase DB and displayed on the live leaderboard.</p>
+      </div>
+
+      <form id="submission-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-mono text-gray-300 mb-1">Project Title *</label>
+            <input type="text" id="project_name" required placeholder="e.g. AgenticCode-Gemma" class="w-full px-3.5 py-2.5 rounded-lg bg-card border border-brand-border text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors">
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-gray-300 mb-1">Team / Developer Name *</label>
+            <input type="text" id="team_name" required placeholder="e.g. NeuralLab Team" class="w-full px-3.5 py-2.5 rounded-lg bg-card border border-brand-border text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-mono text-gray-300 mb-1">Contact Email *</label>
+            <input type="email" id="email" required placeholder="dev@example.com" class="w-full px-3.5 py-2.5 rounded-lg bg-card border border-brand-border text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors">
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-gray-300 mb-1">Challenge Track *</label>
+            <select id="track" required class="w-full px-3.5 py-2.5 rounded-lg bg-card border border-brand-border text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors">
+              <option value="Open-Weight Models">Open-Weight Models 💡</option>
+              <option value="Agent Frameworks">Agent Frameworks 🛠️</option>
+              <option value="Local Inference">Local Inference & Runtime &lt;/&gt;</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-mono text-gray-300 mb-1">GitHub Repository URL *</label>
+            <input type="url" id="github_url" required placeholder="https://github.com/username/project" class="w-full px-3.5 py-2.5 rounded-lg bg-card border border-brand-border text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors">
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-gray-300 mb-1">Demo / Video Link (Optional)</label>
+            <input type="url" id="demo_url" placeholder="https://huggingface.co/spaces/..." class="w-full px-3.5 py-2.5 rounded-lg bg-card border border-brand-border text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono text-gray-300 mb-1">Project Description & Architecture *</label>
+          <textarea id="description" rows="4" required placeholder="Describe the problem, models used (e.g., Llama 3, Gemma 2), frameworks, local runtime setup, and setup instructions..." class="w-full px-3.5 py-2.5 rounded-lg bg-card border border-brand-border text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"></textarea>
+        </div>
+
+        <div id="form-msg" class="hidden p-3 rounded-lg text-xs font-mono"></div>
+
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-gray-300 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" id="submit-btn" class="px-6 py-2.5 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-gray-950 font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition-all">
+            <span id="submit-btn-text">Submit Entry to DB</span>
+            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- INTEGRATED AI CHATBOT WIDGET -->
+  <button id="chatbot-trigger" onclick="toggleChatbot()" class="fixed bottom-6 right-6 z-40 p-3.5 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-bold shadow-2xl shadow-emerald-500/40 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 group">
+    <div class="relative">
+      <i data-lucide="bot" class="w-6 h-6"></i>
+      <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+      </span>
+    </div>
+    <span class="text-xs font-mono font-bold pr-1 hidden sm:inline">AI Assistant</span>
+  </button>
+
+  <div id="chatbot-window" class="fixed bottom-20 right-4 sm:right-6 z-40 w-[calc(100vw-2rem)] sm:w-96 h-[520px] glass-card rounded-2xl border border-white/10 shadow-2xl flex flex-col hidden overflow-hidden transition-all duration-300">
+    <div class="p-3.5 bg-brand-card border-b border-brand-border flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+            Forge AI Assistant
+            <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400">Gemini 3 Flash</span>
+          </h4>
+          <p class="text-[10px] text-gray-400">Grounded on Guidelines & Supabase DB</p>
+        </div>
+      </div>
+      <button onclick="toggleChatbot()" class="p-1 rounded-md text-gray-400 hover:text-white hover:bg-white/5">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <div class="p-2 bg-black/30 border-b border-white/5 flex gap-1.5 overflow-x-auto text-[11px] font-mono text-gray-300 no-scrollbar">
+      <button onclick="askPreset('How do I submit my project?')" class="px-2.5 py-1 rounded-full bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 border border-white/10 shrink-0 transition-colors">How to submit?</button>
+      <button onclick="askPreset('What are the challenge tracks?')" class="px-2.5 py-1 rounded-full bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 border border-white/10 shrink-0 transition-colors">Tracks Info</button>
+      <button onclick="askPreset('What are the judging criteria?')" class="px-2.5 py-1 rounded-full bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 border border-white/10 shrink-0 transition-colors">Judging Rules</button>
+    </div>
+
+    <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3.5 text-xs">
+      <div class="flex items-start gap-2.5">
+        <div class="w-6 h-6 rounded bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+          <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+        </div>
+        <div class="bg-card border border-brand-border rounded-2xl rounded-tl-none p-3 text-gray-200 leading-relaxed max-w-[85%] space-y-2">
+          <p>Hello! I am your hackathon assistant. Ask me anything about challenge tracks, starter kits, submission guidelines, or live Supabase entries!</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="chat-typing" class="px-4 py-1 text-[10px] font-mono text-emerald-400 hidden flex items-center gap-1.5">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"></span>
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style="animation-delay: 0.15s"></span>
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style="animation-delay: 0.3s"></span>
+      AI is reasoning...
+    </div>
+
+    <form onsubmit="handleChatSubmit(event)" class="p-3 bg-brand-card border-t border-brand-border flex gap-2">
+      <input type="text" id="chat-input" placeholder="Ask about guidelines, tracks, DB..." class="flex-grow px-3 py-2 rounded-xl bg-black/50 border border-brand-border text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500">
+      <button type="submit" class="p-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-bold hover:opacity-90 transition-opacity">
+        <i data-lucide="send" class="w-4 h-4"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    /* Supabase Credentials */
+    const SUPABASE_URL = "https://gxiuqetaxqmpsjcmhjuq.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_CoG0Xm_iUT791IUxFALfzg_f_xgPocf";
+    
+    window.supabaseClient = window.supabaseClient || null;
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (err) {
+      console.warn("Supabase init fallback:", err);
+    }
+
+    let allSubmissions = [];
+    let currentFilterTab = 'All';
+    let searchQuery = '';
+
+    const FALLBACK_SUBMISSIONS = [
+      {
+        id: "demo-1",
+        project_name: "AgenticCode-Gemma",
+        team_name: "NeuralForge Lab",
+        email: "contact@neuralforge.ai",
+        track: "Open-Weight Models",
+        github_url: "https://github.com/example/agentic-gemma",
+        demo_url: "https://huggingface.co/spaces/demo/agentic-gemma",
+        description: "Autonomous code refactoring assistant powered by Gemma-2-9b-instruct running locally with vLLM.",
+        created_at: new Date(Date.now() - 3600000 * 2).toISOString()
+      },
+      {
+        id: "demo-2",
+        project_name: "LocalRAG Harness",
+        team_name: "ByteCraft",
+        email: "dev@bytecraft.io",
+        track: "Agent Frameworks",
+        github_url: "https://github.com/example/localrag-harness",
+        demo_url: "https://example.com/demo",
+        description: "Privacy-first document intelligence pipeline using LlamaIndex, Ollama, and Qwen 2.5 14B.",
+        created_at: new Date(Date.now() - 3600000 * 5).toISOString()
+      },
+      {
+        id: "demo-3",
+        project_name: "FastInference-vLLM",
+        team_name: "QuantSquad",
+        email: "info@quantsquad.org",
+        track: "Local Inference",
+        github_url: "https://github.com/example/fast-vllm-engine",
+        demo_url: "",
+        description: "Optimized 4-bit AWQ quantization serving pipeline reaching 180 tokens/sec on consumer GPUs.",
+        created_at: new Date(Date.now() - 3600000 * 12).toISOString()
+      }
+    ];
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (window.lucide) lucide.createIcons();
+      startCountdownTimer();
+      await fetchSubmissions();
+    });
+
+    async function fetchSubmissions() {
+      const loadingEl = document.getElementById('submissions-loading');
+      const gridEl = document.getElementById('submissions-grid');
+      const emptyEl = document.getElementById('submissions-empty');
+
+      loadingEl.classList.remove('hidden');
+      gridEl.classList.add('hidden');
+      emptyEl.classList.add('hidden');
+
+      try {
+        if (window.supabaseClient) {
+          const { data, error } = await window.supabaseClient
+            .from('submissions')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            allSubmissions = FALLBACK_SUBMISSIONS;
+          } else {
+            allSubmissions = (data && data.length > 0) ? data : FALLBACK_SUBMISSIONS;
+          }
+        } else {
+          allSubmissions = FALLBACK_SUBMISSIONS;
+        }
+      } catch (err) {
+        allSubmissions = FALLBACK_SUBMISSIONS;
+      }
+
+      document.getElementById('nav-submission-count').innerText = allSubmissions.length;
+      document.getElementById('count-All').innerText = allSubmissions.length;
+
+      loadingEl.classList.add('hidden');
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      const gridEl = document.getElementById('submissions-grid');
+      const emptyEl = document.getElementById('submissions-empty');
+      gridEl.innerHTML = '';
+
+      const filtered = allSubmissions.filter(item => {
+        const matchesTab = (currentFilterTab === 'All') || (item.track === currentFilterTab);
+        const q = searchQuery.toLowerCase().trim();
+        const matchesSearch = !q || 
+          (item.project_name && item.project_name.toLowerCase().includes(q)) ||
+          (item.team_name && item.team_name.toLowerCase().includes(q)) ||
+          (item.description && item.description.toLowerCase().includes(q));
+
+        return matchesTab && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        gridEl.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+
+      emptyEl.classList.add('hidden');
+      gridEl.classList.remove('hidden');
+
+      filtered.forEach(sub => {
+        const card = document.createElement('div');
+        card.className = "glass-card rounded-2xl p-6 border border-white/10 hover:border-emerald-500/30 transition-all flex flex-col justify-between group";
+
+        let trackBadgeClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+        if (sub.track === 'Agent Frameworks') trackBadgeClass = "bg-cyan-500/10 text-cyan-400 border-cyan-500/20";
+        if (sub.track === 'Local Inference') trackBadgeClass = "bg-purple-500/10 text-purple-400 border-purple-500/20";
+
+        const dateStr = sub.created_at ? new Date(sub.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recent';
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-1 rounded-md text-[11px] font-mono border ${trackBadgeClass}">
+                ${sub.track || 'Open-Weight'}
+              </span>
+              <span class="text-[10px] font-mono text-gray-500">${dateStr}</span>
+            </div>
+
+            <h4 class="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors mb-1">
+              ${escapeHTML(sub.project_name)}
+            </h4>
+            <div class="text-xs font-mono text-gray-400 mb-4 flex items-center gap-1.5">
+              <i data-lucide="users" class="w-3.5 h-3.5 text-gray-500"></i> ${escapeHTML(sub.team_name)}
+            </div>
+
+            <p class="text-xs text-gray-300 line-clamp-3 leading-relaxed mb-6">
+              ${escapeHTML(sub.description)}
+            </p>
+          </div>
+
+          <div class="pt-4 border-t border-white/5 flex items-center justify-between gap-2">
+            <a href="${escapeHTML(sub.github_url)}" target="_blank" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-mono text-gray-200 transition-colors flex items-center gap-1.5">
+              <i data-lucide="github" class="w-3.5 h-3.5"></i> Code
+            </a>
+
+            ${sub.demo_url ? `
+              <a href="${escapeHTML(sub.demo_url)}" target="_blank" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-mono text-emerald-400 border border-emerald-500/20 transition-colors flex items-center gap-1.5">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Demo
+              </a>
+            ` : `
+              <span class="text-[10px] font-mono text-gray-500 italic">No live demo</span>
+            `}
+          </div>
+        `;
+
+        gridEl.appendChild(card);
+      });
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function setFilterTab(tabName) {
+      currentFilterTab = tabName;
+      ['All', 'Open-Weight Models', 'Agent Frameworks', 'Local Inference'].forEach(tab => {
+        const btn = document.getElementById(`tab-${tab}`);
+        if (!btn) return;
+        if (tab === tabName) {
+          btn.className = "px-4 py-2 rounded-lg text-xs font-mono font-medium transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+        } else {
+          btn.className = "px-4 py-2 rounded-lg text-xs font-mono font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all";
+        }
+      });
+      renderLeaderboard();
+    }
+
+    function filterTrackAndScroll(trackName) {
+      setFilterTab(trackName);
+      document.getElementById('leaderboard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('search-input').value;
+      renderLeaderboard();
+    }
+
+    function openModal() {
+      const modal = document.getElementById('submit-modal');
+      modal.classList.remove('hidden');
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('submit-modal');
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const msgEl = document.getElementById('form-msg');
+      const submitBtn = document.getElementById('submit-btn');
+      const btnText = document.getElementById('submit-btn-text');
+
+      msgEl.className = "hidden p-3 rounded-lg text-xs font-mono";
+
+      const payload = {
+        project_name: document.getElementById('project_name').value.trim(),
+        team_name: document.getElementById('team_name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        track: document.getElementById('track').value,
+        github_url: document.getElementById('github_url').value.trim(),
+        demo_url: document.getElementById('demo_url').value.trim(),
+        description: document.getElementById('description').value.trim()
+      };
+
+      submitBtn.disabled = true;
+      btnText.innerText = "Submitting to Database...";
+
+      try {
+        let insertedData = null;
+
+        if (window.supabaseClient) {
+          const { data, error } = await window.supabaseClient
+            .from('submissions')
+            .insert([payload])
+            .select();
+
+          if (error) throw error;
+          insertedData = data ? data[0] : payload;
+        } else {
+          insertedData = { ...payload, id: "local-" + Date.now(), created_at: new Date().toISOString() };
+        }
+
+        showToast("Project successfully submitted!", "success");
+        allSubmissions.unshift(insertedData);
+        
+        document.getElementById('nav-submission-count').innerText = allSubmissions.length;
+        document.getElementById('count-All').innerText = allSubmissions.length;
+        renderLeaderboard();
+
+        document.getElementById('submission-form').reset();
+        closeModal();
+
+      } catch (err) {
+        msgEl.classList.remove('hidden');
+        msgEl.classList.add('bg-red-500/10', 'text-red-400', 'border', 'border-red-500/20');
+        msgEl.innerText = "Error saving to Supabase: " + (err.message || "Unknown error");
+      } finally {
+        submitBtn.disabled = false;
+        btnText.innerText = "Submit Entry to DB";
+      }
+    }
+
+    function toggleChatbot() {
+      const windowEl = document.getElementById('chatbot-window');
+      windowEl.classList.toggle('hidden');
+      if (!windowEl.classList.contains('hidden')) {
+        document.getElementById('chat-input').focus();
+      }
+    }
+
+    function openChatbot() {
+      document.getElementById('chatbot-window').classList.remove('hidden');
+      document.getElementById('chat-input').focus();
+    }
+
+    function askPreset(question) {
+      document.getElementById('chat-input').value = question;
+      handleChatSubmit(new Event('submit'));
+    }
+
+    async function handleChatSubmit(e) {
+      e.preventDefault();
+      const inputEl = document.getElementById('chat-input');
+      const query = inputEl.value.trim();
+      if (!query) return;
+
+      appendChatMessage("user", query);
+      inputEl.value = '';
+
+      const typingEl = document.getElementById('chat-typing');
+      typingEl.classList.remove('hidden');
+
+      try {
+        const systemPrompt = `You are the official AI Hackathon Assistant for the Open-Source AI Challenge Platform 2026.
+Knowledge Context:
+- Tracks: Open-Weight Models (Gemma 2, Llama 3.3, Mistral), Agent Harnesses (LangChain, AutoGen, CrewAI), Local Inference (Ollama, vLLM, llama.cpp).
+- Rules: Open licenses required, multi-track hybrids allowed.
+- Submissions in DB: ${allSubmissions.length}.`;
+
+        const apiKey = ""; 
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+        const payload = {
+          contents: [{ parts: [{ text: query }] }],
+          systemInstruction: { parts: [{ text: systemPrompt }] }
+        };
+
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "You can submit your project using the 'Submit Project' button or explore existing entries on the live leaderboard!";
+
+        typingEl.classList.add('hidden');
+        appendChatMessage("bot", replyText);
+
+      } catch (err) {
+        typingEl.classList.add('hidden');
+        appendChatMessage("bot", "You can submit projects via the 'Submit Project' button or check out the developer starter kits!");
+      }
+    }
+
+    function appendChatMessage(role, text) {
+      const container = document.getElementById('chat-messages');
+      const wrapper = document.createElement('div');
+      wrapper.className = role === 'user' ? "flex items-start justify-end gap-2" : "flex items-start gap-2.5";
+
+      if (role === 'user') {
+        wrapper.innerHTML = `
+          <div class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-200 rounded-2xl rounded-tr-none p-3 text-xs leading-relaxed max-w-[85%]">
+            ${escapeHTML(text)}
+          </div>
+        `;
+      } else {
+        wrapper.innerHTML = `
+          <div class="w-6 h-6 rounded bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+            <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+          </div>
+          <div class="bg-card border border-brand-border rounded-2xl rounded-tl-none p-3 text-gray-200 leading-relaxed max-w-[85%] space-y-2">
+            <p>${formatMarkdownText(text)}</p>
+          </div>
+        `;
+      }
+
+      container.appendChild(wrapper);
+      container.scrollTop = container.scrollHeight;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function formatMarkdownText(str) {
+      return escapeHTML(str)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code class="bg-black/40 px-1 py-0.5 rounded text-emerald-300">$1</code>')
+        .replace(/\n/g, '<br>');
+    }
+
+    function toggleAccordion(id) {
+      const content = document.getElementById(id);
+      const icon = document.getElementById(`icon-${id}`);
+      content.classList.toggle('hidden');
+      if (icon) icon.classList.toggle('rotate-180');
+    }
+
+    function copyToClipboard(text, btnElement) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Command copied to clipboard!", "info");
+      }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast("Command copied!", "info");
+      });
+    }
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let borderClass = "border-emerald-500/30 text-emerald-300 bg-emerald-950/80";
+      let iconName = "check-circle";
+
+      if (type === "error") {
+        borderClass = "border-red-500/30 text-red-300 bg-red-950/80";
+        iconName = "alert-circle";
+      }
+
+      toast.className = `p-3.5 rounded-xl border ${borderClass} backdrop-blur-md shadow-xl text-xs font-mono flex items-center justify-between gap-3 animate-slide-in pointer-events-auto`;
+      toast.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i data-lucide="${iconName}" class="w-4 h-4"></i>
+          <span>${escapeHTML(message)}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-white">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      `;
+
+      container.appendChild(toast);
+      if (window.lucide) lucide.createIcons();
+
+      setTimeout(() => { toast.remove(); }, 4000);
+    }
+
+    function startCountdownTimer() {
+      const deadline = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).getTime();
+
+      setInterval(() => {
+        const now = new Date().getTime();
+        const diff = deadline - now;
+        if (diff <= 0) return;
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById('timer-days').innerText = String(days).padStart(2, '0') + 'd';
+        document.getElementById('timer-hours').innerText = String(hours).padStart(2, '0') + 'h';
+        document.getElementById('timer-mins').innerText = String(mins).padStart(2, '0') + 'm';
+        document.getElementById('timer-secs').innerText = String(secs).padStart(2, '0') + 's';
+      }, 1000);
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
